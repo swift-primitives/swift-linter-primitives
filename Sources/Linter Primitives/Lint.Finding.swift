@@ -9,57 +9,65 @@
 //
 // ===----------------------------------------------------------------------===//
 
-/// A single linter match emitted by a rule.
-///
-/// Composes typed primitives from the ecosystem:
-///
-/// - ``Source/Location`` — file identity (fileID + filePath) and a typed
-///   `Text.Location` (line + column) — never raw `Int` positions.
-/// - ``Diagnostic/Severity`` — semantic severity (error / warning / note /
-///   remark) — never a per-package severity duplicate.
-///
-/// **Open Question (surfaced 2026-05-06)**: `swift-diagnostic-primitives`
-/// presently exposes only the severity type and a namespace; no concrete
-/// diagnostic record. `Lint.Finding` is the linter's record type — a
-/// candidate for promotion to `swift-diagnostic-primitives` as a generic
-/// `Diagnostic.Record` (or similar) so other diagnostic-emitting tools
-/// (compiler-tier audits, build-graph checkers) can consume the same shape.
-/// Until promotion lands, `Lint.Finding` is the canonical linter record.
 extension Lint {
+    /// A linter finding: the wire-format ``Diagnostic_Primitives/Diagnostic/Record``
+    /// emitted by a rule, paired with an optional ``Lint/Visibility``
+    /// annotation captured by the engine.
+    ///
+    /// ## Why wrap the record
+    ///
+    /// ``Diagnostic_Primitives/Diagnostic/Record`` is an L1 type in
+    /// `swift-diagnostic-primitives` — a sibling primitives package
+    /// that this package depends on. Diagnostic primitives MUST NOT
+    /// take a dependency on linter primitives (dependency direction is
+    /// `swift-linter-primitives → swift-diagnostic-primitives`), so the
+    /// visibility tag cannot live on `Diagnostic.Record` itself. The
+    /// engine wraps each emitted record into ``Lint/Finding`` after the
+    /// rule fires; rule findings closures continue to return
+    /// `[Diagnostic.Record]` and the engine post-processes — no rule
+    /// signatures change.
+    ///
+    /// ## Visibility semantics
+    ///
+    /// ``visibility`` is `nil` when the engine could not resolve the
+    /// finding's source position to a declaration node (e.g., the
+    /// finding lands at the source-file root, or position lookup fails).
+    /// When present, the value is the effective access level of the
+    /// enclosing decl chain as computed by
+    /// ``Lint/Visibility/effective(of:)`` — minimum of every modifier
+    /// walked from the finding's syntax node up to the source-file root.
+    /// Consumers segmenting findings by visibility (e.g., empirical
+    /// follow-ups against the `fileprivate`/`private` slice) read this
+    /// field directly without re-walking the tree.
+    ///
+    /// ## Layering
+    ///
+    /// Reporters consume `[Lint.Finding]` and choose whether to surface
+    /// visibility — the text reporter appends `[visibility: <case>]`
+    /// after the SwiftLint-compatible line, the SARIF reporter emits a
+    /// `properties.visibility` field per SARIF result. Consumers that
+    /// only need the underlying record (CI parsers, IDE problem-matchers)
+    /// access ``record`` directly; the wrapper composes pure data and
+    /// adds no runtime cost beyond an optional enum case.
     public struct Finding: Sendable, Hashable {
-        /// Self-contained source location (file identity + line:column).
-        public let location: Source.Location
+        /// The underlying diagnostic record — source location, severity,
+        /// rule identifier, and message — exactly as emitted by the rule.
+        public let record: Diagnostic.Record
 
-        /// Semantic severity from `swift-diagnostic-primitives`.
-        public let severity: Diagnostic.Severity
+        /// The effective visibility of the declaration enclosing the finding.
+        ///
+        /// `nil` when the engine could not resolve a syntax node for the
+        /// record's source position.
+        public let visibility: Lint.Visibility?
 
-        /// The rule's stable identifier (per ``Lint/Rule/Protocol/id``).
-        public let ruleID: Swift.String
-
-        /// Human-readable explanation of the match.
-        public let message: Swift.String
-
+        /// Wraps a diagnostic record with its optional visibility annotation.
         @inlinable
         public init(
-            location: Source.Location,
-            severity: Diagnostic.Severity,
-            ruleID: Swift.String,
-            message: Swift.String
+            record: Diagnostic.Record,
+            visibility: Lint.Visibility? = nil
         ) {
-            self.location = location
-            self.severity = severity
-            self.ruleID = ruleID
-            self.message = message
+            self.record = record
+            self.visibility = visibility
         }
-    }
-}
-
-extension Lint.Finding: Comparable {
-    @inlinable
-    public static func < (lhs: Self, rhs: Self) -> Bool {
-        if lhs.location != rhs.location { return lhs.location < rhs.location }
-        if lhs.severity != rhs.severity { return lhs.severity < rhs.severity }
-        if lhs.ruleID != rhs.ruleID { return lhs.ruleID < rhs.ruleID }
-        return lhs.message < rhs.message
     }
 }

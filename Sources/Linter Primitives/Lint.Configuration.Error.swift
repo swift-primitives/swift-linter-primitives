@@ -10,11 +10,13 @@
 // ===----------------------------------------------------------------------===//
 
 extension Lint.Configuration {
-    /// Errors raised when reading or parsing a `.swift-primitives-lint.yml`
-    /// (or equivalent) config file.
+    /// Errors raised by typed-DSL configuration loading paths — the
+    /// orchestrator's pre-evaluation check (file presence) and the
+    /// post-evaluation translation from ``Lint/Manifest`` to a runtime
+    /// ``Lint/Configuration`` (bad rule ID at the manifest layer, etc.).
     public enum Error: Swift.Error, Hashable, Sendable {
         case fileNotReadable(path: Swift.String)
         case malformed(path: Swift.String, reason: Swift.String)
-        case unknownRuleID(Swift.String, path: Swift.String)
+        case unknownRuleID(Lint.Rule.ID, path: Swift.String)
     }
 }

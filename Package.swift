@@ -22,10 +22,13 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "../swift-source-primitives"),
-        .package(path: "../swift-diagnostic-primitives"),
-        .package(path: "../swift-cardinal-primitives"),
-        .package(path: "../swift-tagged-primitives"),
+        .package(url: "https://github.com/swift-primitives/swift-source-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-byte-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-diagnostic-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-cardinal-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-tagged-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-ownership-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-standard-library-extensions.git", branch: "main"),
         .package(url: "https://github.com/swiftlang/swift-syntax.git", "602.0.0"..<"603.0.0"),
     ],
     targets: [
@@ -36,6 +39,9 @@ let package = Package(
                 .product(name: "Diagnostic Primitives", package: "swift-diagnostic-primitives"),
                 .product(name: "Cardinal Primitives", package: "swift-cardinal-primitives"),
                 .product(name: "Tagged Primitives", package: "swift-tagged-primitives"),
+                .product(name: "Tagged Primitives Standard Library Integration", package: "swift-tagged-primitives"),
+                .product(name: "Ownership Shared Primitives", package: "swift-ownership-primitives"),
+                .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
             ]
         ),
@@ -45,6 +51,7 @@ let package = Package(
                 "Linter Primitives",
                 .product(name: "Source Primitives Test Support", package: "swift-source-primitives"),
                 .product(name: "Diagnostic Primitives Test Support", package: "swift-diagnostic-primitives"),
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
             ],
             path: "Tests/Support"
         ),
@@ -53,6 +60,9 @@ let package = Package(
             dependencies: [
                 "Linter Primitives",
                 "Linter Primitives Test Support",
+                .product(name: "Byte Primitives", package: "swift-byte-primitives"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
             ],
             path: "Tests/Linter Primitives Tests"
         ),
