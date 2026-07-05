@@ -40,7 +40,7 @@ let package = Package(
                 .product(name: "Cardinal Primitives", package: "swift-cardinal-primitives"),
                 .product(name: "Tagged Primitives", package: "swift-tagged-primitives"),
                 .product(name: "Tagged Primitives Standard Library Integration", package: "swift-tagged-primitives"),
-                .product(name: "Ownership Shared Primitives", package: "swift-ownership-primitives"),
+                .product(name: "Ownership Immutable Primitives", package: "swift-ownership-primitives"),
                 .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
             ]

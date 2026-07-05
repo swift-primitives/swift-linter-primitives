@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Ownership_Shared_Primitives
+public import Ownership_Immutable_Primitives
 public import Standard_Library_Extensions
 
 extension Lint {
@@ -41,11 +41,11 @@ extension Lint {
         /// primitive.
         ///
         /// `Configuration?` cannot directly hold itself (value-type
-        /// recursion); `Ownership.Shared` indirects the storage on the heap
+        /// recursion); `Ownership.Immutable` indirects the storage on the heap
         /// with ARC semantics — multiple readers (each ``rules/effective``
         /// walk traverses the chain) without allocation per traversal.
         @usableFromInline
-        internal let _parent: Ownership.Shared<Lint.Configuration>?
+        internal let _parent: Ownership.Immutable<Lint.Configuration>?
 
         /// Per-rule entries authored at this configuration layer.
         ///
@@ -90,7 +90,7 @@ extension Lint {
             disabled: Set<Lint.Rule.ID> = [],
             @Array<Lint.Rule.Configuration>.Builder rules: () -> [Lint.Rule.Configuration]
         ) {
-            self._parent = parent.map(Ownership.Shared.init)
+            self._parent = parent.map(Ownership.Immutable.init)
             self._ruleEntries = rules()
             self.excluded = excluded
             self._disabledRules = disabled
