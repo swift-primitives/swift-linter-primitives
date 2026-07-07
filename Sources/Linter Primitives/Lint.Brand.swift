@@ -54,9 +54,10 @@ extension Lint.Brand {
     /// value-form or protocol-form brand-owner joins the cohort.
     ///
     /// `zero or one literal` is intentionally NOT driven by this vocabulary:
-    /// it recognises `Cardinal(0)` / `Cardinal(1)` specifically and so guards
-    /// only `"Cardinal"`, keeping it firing on a stray `Cardinal(0)` written
-    /// inside a *different* brand-owner (e.g. ordinal).
+    /// it recognises a zero- or one-argument `Cardinal` constructor call
+    /// specifically and so guards only `"Cardinal"`, keeping it firing on a
+    /// stray zero-argument `Cardinal` construction written inside a
+    /// *different* brand-owner (e.g. ordinal).
     public static let numericBoundaryVocabulary: Swift.Set<Swift.String> = [
         "Cardinal",
         "Ordinal",
