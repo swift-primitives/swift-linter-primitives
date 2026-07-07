@@ -46,19 +46,41 @@ extension Lint.Source {
         /// Converts an `AbsolutePosition` to a (line, column) location.
         public let converter: SourceLocationConverter
 
+        /// The namespace-root type names declared across the *entire run's*
+        /// own sources — not merely this file.
+        ///
+        /// Stamped by the engine's brand pre-pass
+        /// (``Lint/Run``) so a rule can self-suppress at a brand owner's
+        /// own surface: when the run's own sources declare the brand a
+        /// boundary rule guards, same-package boundary access is
+        /// legitimate-by-construction (§A brand-owner recognizer). Rules
+        /// consume it through ``Lint/Brand/owned(_:in:)``.
+        ///
+        /// Defaults to the empty set — a direct `Parsed` construction that
+        /// predates the pre-pass (unit-test fixtures, ad-hoc harnesses)
+        /// simply never self-suppresses, preserving the pre-detector
+        /// firing behaviour.
+        public let declaredTypeNames: Swift.Set<Swift.String>
+
         /// Creates a parsed-source bundle from its file identity, path,
         /// syntax tree, and location converter.
+        ///
+        /// `declaredTypeNames` carries the run-level brand-owner recognizer
+        /// set; it defaults to empty so pre-existing construction sites
+        /// (which never self-suppress) compile and behave unchanged.
         @inlinable
         public init(
             file: Source.File,
             path: Lint.Source.Path,
             tree: SourceFileSyntax,
-            converter: SourceLocationConverter
+            converter: SourceLocationConverter,
+            declaredTypeNames: Swift.Set<Swift.String> = []
         ) {
             self.file = file
             self.path = path
             self.tree = tree
             self.converter = converter
+            self.declaredTypeNames = declaredTypeNames
         }
     }
 }
