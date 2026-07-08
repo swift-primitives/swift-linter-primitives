@@ -25,27 +25,29 @@ extension Lint.Configuration {
         public init(_config: Lint.Configuration) {
             self._config = _config
         }
+    }
+}
 
-        /// Rule entries authored at this configuration layer.
-        @inlinable
-        public var entries: [Lint.Rule.Configuration] {
-            _config._ruleEntries
-        }
+extension Lint.Configuration.Rules {
+    /// Rule entries authored at this configuration layer.
+    @inlinable
+    public var entries: [Lint.Rule.Configuration] {
+        _config._ruleEntries
+    }
 
-        /// Rule IDs disabled wholesale at this configuration layer.
-        @inlinable
-        public var disabled: Set<Lint.Rule.ID> {
-            _config._disabledRules
-        }
+    /// Rule IDs disabled wholesale at this configuration layer.
+    @inlinable
+    public var disabled: Set<Lint.Rule.ID> {
+        _config._disabledRules
+    }
 
-        /// Chain-resolved sub-view: ``Effective/entries`` returns the
-        /// flattened entries across the parent chain (with later layers
-        /// overriding earlier ones per rule ID, and disabled entries
-        /// dropped); ``Effective/disabled`` returns the union of
-        /// disabled IDs across the chain.
-        @inlinable
-        public var effective: Effective {
-            Effective(_config: _config)
-        }
+    /// Chain-resolved sub-view: ``Effective/entries`` returns the
+    /// flattened entries across the parent chain (with later layers
+    /// overriding earlier ones per rule ID, and disabled entries
+    /// dropped); ``Effective/disabled`` returns the union of
+    /// disabled IDs across the chain.
+    @inlinable
+    public var effective: Effective {
+        Effective(_config: _config)
     }
 }

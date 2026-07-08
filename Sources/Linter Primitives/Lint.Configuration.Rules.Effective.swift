@@ -36,46 +36,48 @@ extension Lint.Configuration.Rules {
         public init(_config: Lint.Configuration) {
             self._config = _config
         }
+    }
+}
 
-        /// Flattened rule entries with later layers overriding earlier ones.
-        ///
-        /// Resolution is per rule ID; disabled rules are dropped.
-        @inlinable
-        public var entries: [Lint.Rule.Configuration] {
-            var raw: [Lint.Rule.Configuration] = []
-            if let parent = _config.parent {
-                raw.append(contentsOf: parent.rules.effective.entries)
-            }
-            raw.append(contentsOf: _config._ruleEntries)
-            var byID: [Lint.Rule.ID: Lint.Rule.Configuration] = [:]
-            var order: [Lint.Rule.ID] = []
-            for entry in raw {
-                let id = entry.rule.id
-                if byID[id] == nil { order.append(id) }
-                byID[id] = entry
-            }
-            let disabledIDs = self.disabled
-            return order.compactMap { id in
-                guard let entry = byID[id], entry.mode == .enabled else { return nil }
-                if disabledIDs.contains(id) { return nil }
-                return entry
-            }
+extension Lint.Configuration.Rules.Effective {
+    /// Flattened rule entries with later layers overriding earlier ones.
+    ///
+    /// Resolution is per rule ID; disabled rules are dropped.
+    @inlinable
+    public var entries: [Lint.Rule.Configuration] {
+        var raw: [Lint.Rule.Configuration] = []
+        if let parent = _config.parent {
+            raw.append(contentsOf: parent.rules.effective.entries)
         }
+        raw.append(contentsOf: _config._ruleEntries)
+        var byID: [Lint.Rule.ID: Lint.Rule.Configuration] = [:]
+        var order: [Lint.Rule.ID] = []
+        for entry in raw {
+            let id = entry.rule.id
+            if byID[id] == nil { order.append(id) }
+            byID[id] = entry
+        }
+        let disabledIDs = self.disabled
+        return order.compactMap { id in
+            guard let entry = byID[id], entry.mode == .enabled else { return nil }
+            if disabledIDs.contains(id) { return nil }
+            return entry
+        }
+    }
 
-        /// Walks the parent chain and accumulates every layer's disabled
-        /// set into a single `Set` for `O(1)` lookup at ``entries``.
-        @inlinable
-        public var disabled: Set<Lint.Rule.ID> {
-            var ids: Set<Lint.Rule.ID> = []
-            if let parent = _config.parent {
-                for id in parent.rules.effective.disabled {
-                    ids.insert(id)
-                }
-            }
-            for id in _config._disabledRules {
+    /// Walks the parent chain and accumulates every layer's disabled
+    /// set into a single `Set` for `O(1)` lookup at ``entries``.
+    @inlinable
+    public var disabled: Set<Lint.Rule.ID> {
+        var ids: Set<Lint.Rule.ID> = []
+        if let parent = _config.parent {
+            for id in parent.rules.effective.disabled {
                 ids.insert(id)
             }
-            return ids
         }
+        for id in _config._disabledRules {
+            ids.insert(id)
+        }
+        return ids
     }
 }
