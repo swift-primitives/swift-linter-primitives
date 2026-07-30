@@ -12,11 +12,11 @@
 extension Lint {
     /// A lint rule, as a witness value.
     ///
-    /// A rule is data: a typed identity, a severity View, and a pure
-    /// function that maps a parsed source plus a resolved severity to a list
-    /// of findings. There is no protocol conformance, no type-level identity,
-    /// and no `init(severity:)` factory — severity is threaded into the
-    /// closure by the engine at run time.
+    /// A rule is data: a typed identity, a severity View, an inline-suppression
+    /// policy, and a pure function that maps a parsed source plus a resolved
+    /// severity to a list of findings. There is no protocol conformance, no
+    /// type-level identity, and no `init(severity:)` factory — severity is
+    /// threaded into the closure by the engine at run time.
     ///
     /// Rule packs publish rules as static values on this type. Both the
     /// Swift identifier and the stable `id` string use the same
@@ -66,6 +66,13 @@ extension Lint {
         /// through ``findings``.
         public let severity: Severity
 
+        /// Inline-suppression directive shapes this rule sanctions.
+        ///
+        /// Rules default to ``Lint/Rule/Suppression/none`` and must opt in
+        /// explicitly. This declaration does not itself scan directives or
+        /// elide findings; the `swift-linter` engine owns applying it.
+        public let suppression: Suppression
+
         /// Pure mapping from `(parsed source, resolved severity)` to findings.
         ///
         /// The engine resolves severity once per run
@@ -73,16 +80,21 @@ extension Lint {
         /// through this closure. Rules do not store severity.
         public let findings: @Sendable (borrowing Lint.Source.Parsed, Diagnostic.Severity) -> [Diagnostic.Record]
 
-        /// Creates a rule from its identifier, default severity, and findings
-        /// closure.
+        /// Creates a rule from its identifier, default severity,
+        /// inline-suppression policy, and findings closure.
+        ///
+        /// Existing declarations that omit `suppression` sanction no inline
+        /// directive shape.
         @inlinable
         public init(
             id: Lint.Rule.ID,
             default severity: Diagnostic.Severity,
+            suppression: Lint.Rule.Suppression = .none,
             findings: @escaping @Sendable (borrowing Lint.Source.Parsed, Diagnostic.Severity) -> [Diagnostic.Record]
         ) {
             self.id = id
             self.severity = Severity(default: severity)
+            self.suppression = suppression
             self.findings = findings
         }
     }
