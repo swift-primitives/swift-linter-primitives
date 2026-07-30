@@ -93,7 +93,7 @@ extension Lint.Brand {
     }
 
     /// True when the run's own sources declare — at namespace root — any of
-    /// `brands`, i.e. the run OWNS the brand a boundary rule guards.
+    /// `brands`, that is, the run OWNS the brand a boundary rule guards.
     ///
     /// A rule calls this at the top of its `findings` closure and returns
     /// `[]` when it is `true`. Reads the run-level set the engine stamped on
