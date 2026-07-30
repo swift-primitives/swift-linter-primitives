@@ -18,6 +18,7 @@ extension Lint.Rule {
     public static let `try optional` = Lint.Rule(
         id: "try optional",
         default: .warning,
+        suppression: .next,
         findings: { (source: borrowing Lint.Source.Parsed, severity) in
             final class Visitor: SyntaxVisitor {
                 var hits: [SourceLocation] = []
@@ -66,6 +67,16 @@ let configuration = Lint.Configuration(
 ```
 
 Three properties hold at compile time, not at runtime: the rule identifier is a `Tagged<Lint.Rule, String>` (mixing it with another tagged identifier is a type error); the finding shape is the ecosystem-wide `Diagnostic.Record` (the linter introduces no parallel finding type); and the visitor consumes a `Lint.Source.Parsed` bundle that carries file identity, AST, and a position-to-(line, column) converter as a single value.
+
+---
+
+## Inline Suppression Policy
+
+Every rule carries one `Lint.Rule.Suppression` policy. Existing declarations default to `.none`; a rule opts in explicitly with `.next`, `.line`, or `.both`. The directive shape is typed, so an engine can ask `rule.suppression.sanctions(.next)` without matching rule IDs or directive strings.
+
+`filtered(toPaths:)`, `with(default:)`, and `pinned(to:)` preserve the policy. `combining` never derives permissions from child rules: its composite policy defaults independently to `.none` and can be declared explicitly when the composite itself sanctions a shape.
+
+This package owns the portable declaration only. Scanning source comments and consulting the policy before eliding findings remain responsibilities of the `swift-linter` engine.
 
 ---
 

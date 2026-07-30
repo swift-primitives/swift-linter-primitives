@@ -19,6 +19,25 @@ extension Lint.Rule {
     @Suite
     struct Test {
         @Suite struct Unit {}
+        @Suite struct `Edge Case` {}
+    }
+}
+
+extension Lint.Rule.Test {
+    fileprivate static func fixture(
+        id: Lint.Rule.ID = "suppression fixture",
+        suppression: Lint.Rule.Suppression = .none
+    ) -> Lint.Rule {
+        Lint.Rule(
+            id: id,
+            default: .warning,
+            suppression: suppression,
+            findings: { (_: borrowing Lint.Source.Parsed, _) in [] }
+        )
+    }
+
+    fileprivate static func require<Value: Sendable>(_ value: Value) -> Value {
+        value
     }
 }
 
@@ -69,6 +88,34 @@ extension Lint.Rule.Test.Unit {
     }
 
     @Test
+    func `suppression defaults to sanctioning neither directive`() {
+        let suppression = Lint.Rule.Test.fixture().suppression
+        #expect(!suppression.sanctions(.next))
+        #expect(!suppression.sanctions(.line))
+    }
+
+    @Test
+    func `next suppression sanctions only the next directive`() {
+        let suppression = Lint.Rule.Test.fixture(suppression: .next).suppression
+        #expect(suppression.sanctions(.next))
+        #expect(!suppression.sanctions(.line))
+    }
+
+    @Test
+    func `line suppression sanctions only the line directive`() {
+        let suppression = Lint.Rule.Test.fixture(suppression: .line).suppression
+        #expect(!suppression.sanctions(.next))
+        #expect(suppression.sanctions(.line))
+    }
+
+    @Test
+    func `both suppression sanctions both directives`() {
+        let suppression = Lint.Rule.Test.require(Lint.Rule.Suppression.both)
+        #expect(suppression.sanctions(.next))
+        #expect(suppression.sanctions(.line))
+    }
+
+    @Test
     func `with default replaces only the default, not the threaded severity`() {
         let original = Lint.Rule.`sketch try optional`
         let promoted = original.with(default: .error)
@@ -78,11 +125,25 @@ extension Lint.Rule.Test.Unit {
     }
 
     @Test
+    func `with default preserves suppression policy`() {
+        let original = Lint.Rule.Test.fixture(suppression: .next)
+        let promoted = original.with(default: .error)
+        #expect(promoted.suppression == original.suppression)
+    }
+
+    @Test
     func `pinned to ignores the threaded severity`() {
         let source = parsedSource("_ = try? f()")
         let pinned = Lint.Rule.`sketch try optional`.pinned(to: .error)
         let findings = pinned.findings(source, .warning)  // engine threads warning…
         #expect(findings.first?.severity == .error)  // …but rule pins error
+    }
+
+    @Test
+    func `pinned to preserves suppression policy`() {
+        let original = Lint.Rule.Test.fixture(suppression: .line)
+        let pinned = original.pinned(to: .error)
+        #expect(pinned.suppression == original.suppression)
     }
 
     @Test
@@ -104,6 +165,13 @@ extension Lint.Rule.Test.Unit {
         let scoped = Lint.Rule.`sketch try optional`.filtered(toPaths: .including(["Sources/A"]))
         #expect(scoped.findings(inside, .warning).count == 1)
         #expect(scoped.findings(outside, .warning).count == 0)
+    }
+
+    @Test
+    func `filtered to paths preserves suppression policy`() {
+        let original = Lint.Rule.Test.fixture(suppression: .both)
+        let scoped = original.filtered(toPaths: .including(["Sources/A"]))
+        #expect(scoped.suppression == original.suppression)
     }
 
     @Test
@@ -146,5 +214,33 @@ extension Lint.Rule.Test.Unit {
         #expect(effective.count == 1)
         #expect(effective.first?.rule.id == "sketch_try_optional")
         #expect(effective.first?.severity == .error)
+    }
+}
+
+extension Lint.Rule.Test.`Edge Case` {
+    @Test
+    func `combining does not infer suppression policy from children`() {
+        let child = Lint.Rule.Test.fixture(suppression: .both)
+        let composite = Lint.Rule.combining(
+            id: "composite",
+            default: .warning,
+            [child, child]
+        )
+        #expect(composite.suppression == .none)
+        #expect(!composite.suppression.sanctions(.next))
+        #expect(!composite.suppression.sanctions(.line))
+    }
+
+    @Test
+    func `combining accepts only its explicitly declared suppression policy`() {
+        let child = Lint.Rule.Test.fixture()
+        let composite = Lint.Rule.combining(
+            id: "composite",
+            default: .warning,
+            suppression: .line,
+            [child]
+        )
+        #expect(!composite.suppression.sanctions(.next))
+        #expect(composite.suppression.sanctions(.line))
     }
 }

@@ -33,6 +33,7 @@ extension Lint.Rule {
         Lint.Rule(
             id: self.id,
             default: self.severity.default,
+            suppression: self.suppression,
             findings: { (source: borrowing Lint.Source.Parsed, severity) in
                 guard filter.matches(sourcePath: source.path) else { return [] }
                 return self.findings(source, severity)
@@ -50,6 +51,7 @@ extension Lint.Rule {
         Lint.Rule(
             id: self.id,
             default: severity,
+            suppression: self.suppression,
             findings: self.findings
         )
     }
@@ -64,6 +66,7 @@ extension Lint.Rule {
         Lint.Rule(
             id: self.id,
             default: severity,
+            suppression: self.suppression,
             findings: { (source: borrowing Lint.Source.Parsed, _) in
                 self.findings(source, severity)
             }
@@ -73,18 +76,22 @@ extension Lint.Rule {
     /// Returns a composite rule that runs every child rule against the
     /// same parsed source and concatenates findings in input order.
     ///
-    /// The composite carries `id` and a default severity itself; children
-    /// supply their own findings at the severity threaded through the
-    /// composite. Useful for packaging a rule set as a single witness.
+    /// The composite carries `id`, a default severity, and an explicit
+    /// suppression policy itself; children supply their own findings at the
+    /// severity threaded through the composite. Child policies are never
+    /// combined or inferred, so the composite defaults to sanctioning no
+    /// directive shape. Useful for packaging a rule set as a single witness.
     @inlinable
     public static func combining(
         id: Lint.Rule.ID,
         default severity: Diagnostic.Severity,
+        suppression: Lint.Rule.Suppression = .none,
         _ rules: [Lint.Rule]
     ) -> Lint.Rule {
         Lint.Rule(
             id: id,
             default: severity,
+            suppression: suppression,
             findings: { (source: borrowing Lint.Source.Parsed, severity) in
                 var out: [Diagnostic.Record] = []
                 for rule in rules {
