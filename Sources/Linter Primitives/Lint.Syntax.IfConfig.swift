@@ -29,10 +29,10 @@ extension Lint.Syntax.IfConfig {
     /// down. Non-`#if` items are kept as-is, in order.
     @inlinable
     public static func statements(
-        _ statements: CodeBlockItemListSyntax
+        _ list: CodeBlockItemListSyntax
     ) -> [CodeBlockItemSyntax] {
         var result: [CodeBlockItemSyntax] = []
-        for item in statements {
+        for item in list {
             guard case .decl(let decl) = item.item,
                 let ifConfig = decl.as(IfConfigDeclSyntax.self)
             else {
