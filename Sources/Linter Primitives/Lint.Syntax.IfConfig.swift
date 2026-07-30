@@ -60,9 +60,9 @@ extension Lint.Syntax.IfConfig {
         members(block.members)
     }
 
-    /// Overload operating directly on a `MemberBlockItemListSyntax`, for
-    /// callers that already hold one (e.g. recursion, or a caller that does
-    /// not have the enclosing `MemberBlockSyntax`).
+    /// Overload operating directly on a `MemberBlockItemListSyntax`, for callers that already hold one.
+    ///
+    /// Useful for recursion, or for a caller that does not have the enclosing `MemberBlockSyntax`.
     @inlinable
     public static func members(
         _ list: MemberBlockItemListSyntax
