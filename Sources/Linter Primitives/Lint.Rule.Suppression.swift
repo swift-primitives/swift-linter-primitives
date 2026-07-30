@@ -63,6 +63,7 @@ extension Lint.Rule.Suppression {
         switch directive {
         case .next:
             _next
+
         case .line:
             _line
         }
