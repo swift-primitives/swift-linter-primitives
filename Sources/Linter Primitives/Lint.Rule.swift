@@ -80,22 +80,45 @@ extension Lint {
         /// through this closure. Rules do not store severity.
         public let findings: @Sendable (borrowing Lint.Source.Parsed, Diagnostic.Severity) -> [Diagnostic.Record]
 
+        /// Canonical in-place fix for this rule's findings, when the rule
+        /// specifies one that is expressible as a whole-file rewrite.
+        ///
+        /// A rule declares a fix by supplying a pure function from a parsed
+        /// source to the rewritten source text. Returning `nil` means "this
+        /// file needs no change" — either the rule found nothing, or every
+        /// finding in the file falls outside the autofixable subset. A rule
+        /// MUST NOT return text for a finding whose canonical fix it cannot
+        /// derive with certainty: an unfixable finding stays a finding.
+        ///
+        /// `nil` on the rule itself means the rule has no autofix at all,
+        /// which is the default. Rules whose fix requires emitting or
+        /// deleting *other* files (file splits, extension moves) are not
+        /// expressible here by construction, and keep `fix` `nil`.
+        ///
+        /// The engine applies fixes file-by-file, re-parsing between rules so
+        /// each rewriter sees the previous one's output. It never applies a
+        /// rewrite it cannot re-parse.
+        public let fix: (@Sendable (borrowing Lint.Source.Parsed) -> Swift.String?)?
+
         /// Creates a rule from its identifier, default severity,
-        /// inline-suppression policy, and findings closure.
+        /// inline-suppression policy, findings closure, and optional
+        /// canonical fix.
         ///
         /// Existing declarations that omit `suppression` sanction no inline
-        /// directive shape.
+        /// directive shape; declarations that omit `fix` have no autofix.
         @inlinable
         public init(
             id: Lint.Rule.ID,
             default severity: Diagnostic.Severity,
             suppression: Lint.Rule.Suppression = .none,
-            findings: @escaping @Sendable (borrowing Lint.Source.Parsed, Diagnostic.Severity) -> [Diagnostic.Record]
+            findings: @escaping @Sendable (borrowing Lint.Source.Parsed, Diagnostic.Severity) -> [Diagnostic.Record],
+            fix: (@Sendable (borrowing Lint.Source.Parsed) -> Swift.String?)? = nil
         ) {
             self.id = id
             self.severity = Severity(default: severity)
             self.suppression = suppression
             self.findings = findings
+            self.fix = fix
         }
     }
 }

@@ -37,8 +37,30 @@ extension Lint.Rule {
             findings: { (source: borrowing Lint.Source.Parsed, severity) in
                 guard filter.matches(sourcePath: source.path) else { return [] }
                 return self.findings(source, severity)
-            }
+            },
+            // The path filter gates the fix on the same predicate as the
+            // findings: a rule scoped away from a path must not rewrite it.
+            fix: Self.gated(self.fix, by: filter)
         )
+    }
+
+    /// Wraps `fix` so it declines every source `filter` excludes.
+    ///
+    /// A free function rather than `fix.map { … }`: `Optional.map`'s
+    /// transform is not `@Sendable`, so the closure it returns cannot be
+    /// converted to the `@Sendable` fix type without a diagnostic. Spelling
+    /// the wrap out keeps the sendability of the result checked rather than
+    /// asserted.
+    @inlinable
+    public static func gated(
+        _ fix: (@Sendable (borrowing Lint.Source.Parsed) -> Swift.String?)?,
+        by filter: Lint.Filter
+    ) -> (@Sendable (borrowing Lint.Source.Parsed) -> Swift.String?)? {
+        guard let fix else { return nil }
+        return { (source: borrowing Lint.Source.Parsed) -> Swift.String? in
+            guard filter.matches(sourcePath: source.path) else { return nil }
+            return fix(source)
+        }
     }
 
     /// Returns a rule whose default severity is replaced.
@@ -52,7 +74,8 @@ extension Lint.Rule {
             id: self.id,
             default: severity,
             suppression: self.suppression,
-            findings: self.findings
+            findings: self.findings,
+            fix: self.fix
         )
     }
 
@@ -69,12 +92,18 @@ extension Lint.Rule {
             suppression: self.suppression,
             findings: { (source: borrowing Lint.Source.Parsed, _) in
                 self.findings(source, severity)
-            }
+            },
+            fix: self.fix
         )
     }
 
     /// Returns a composite rule that runs every child rule against the
     /// same parsed source and concatenates findings in input order.
+    ///
+    /// The composite carries no autofix even when its children do: chaining
+    /// whole-file rewrites requires re-parsing between children, which is the
+    /// engine's job, not a closure's. Activate the children individually to
+    /// get their fixes.
     ///
     /// The composite carries `id`, a default severity, and an explicit
     /// suppression policy itself; children supply their own findings at the
