@@ -18,7 +18,7 @@ extension Lint.Syntax {
     @Suite
     struct Test {
         @Suite struct Identifier {}
-        @Suite struct IfConfig {}
+        @Suite struct `If Config` {}
         @Suite struct Scope {}
     }
 }
@@ -54,7 +54,7 @@ extension Lint.Syntax.Test.Identifier {
 
 // MARK: - Lint.Syntax.IfConfig
 
-extension Lint.Syntax.Test.IfConfig {
+extension Lint.Syntax.Test.`If Config` {
     @Test
     func `Nested if config inside if config is flattened all the way down`() {
         let source = """
