@@ -78,7 +78,8 @@ extension Lint {
         /// The engine resolves severity once per run
         /// (`configuration.severity ?? rule.severity.default`) and threads it
         /// through this closure. Rules do not store severity.
-        public let findings: @Sendable (borrowing Lint.Source.Parsed, Diagnostic.Severity) -> [Diagnostic.Record]
+        public let findings:
+            @Sendable (borrowing Lint.Source.Parsed, Diagnostic.Severity) -> [Diagnostic.Record]
 
         /// Canonical in-place fix for this rule's findings, when the rule
         /// specifies one that is expressible as a whole-file rewrite.
@@ -111,7 +112,9 @@ extension Lint {
             id: Lint.Rule.ID,
             default severity: Diagnostic.Severity,
             suppression: Lint.Rule.Suppression = .none,
-            findings: @escaping @Sendable (borrowing Lint.Source.Parsed, Diagnostic.Severity) -> [Diagnostic.Record],
+            findings:
+                @escaping @Sendable (borrowing Lint.Source.Parsed, Diagnostic.Severity) ->
+                [Diagnostic.Record],
             fix: (@Sendable (borrowing Lint.Source.Parsed) -> Swift.String?)? = nil
         ) {
             self.id = id

@@ -139,7 +139,10 @@ extension Lint.Visibility.Test.Effective {
 
 // MARK: - Test helpers
 
-private func firstDeclVisibility(in source: Swift.String, named name: Swift.String) -> Lint.Visibility? {
+private func firstDeclVisibility(
+    in source: Swift.String,
+    named name: Swift.String
+) -> Lint.Visibility? {
     let tree = Parser.parse(source: source)
     return findNamedDecl(in: Syntax(tree), name: name).map { Lint.Visibility.effective(of: $0) }
 }

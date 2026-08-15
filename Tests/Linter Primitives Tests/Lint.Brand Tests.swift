@@ -83,7 +83,10 @@ extension Lint.Brand.Test.Unit {
 
     @Test
     func `owned is false when the run declares no guarded brand`() {
-        let source = Lint.Brand.Test.parsed("let x = c.rawValue", declaredTypeNames: ["SomeConsumerType"])
+        let source = Lint.Brand.Test.parsed(
+            "let x = c.rawValue",
+            declaredTypeNames: ["SomeConsumerType"]
+        )
         let owned = Lint.Brand.owned(Lint.Brand.numericBoundaryVocabulary, in: source)
         #expect(!owned)
     }
