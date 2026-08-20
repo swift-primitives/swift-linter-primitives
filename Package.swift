@@ -1,15 +1,15 @@
-// swift-tools-version: 6.3.3
+// swift-tools-version: 6.4
 
 import PackageDescription
 
 let package = Package(
     name: "swift-linter-primitives",
     platforms: [
-        .macOS("27"),
-        .iOS("27"),
-        .tvOS("27"),
-        .watchOS("27"),
-        .visionOS("27")
+        .macOS(.v27),
+        .iOS(.v27),
+        .tvOS(.v27),
+        .watchOS(.v27),
+        .visionOS(.v27),
     ],
     products: [
         .library(
@@ -22,13 +22,34 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/swift-primitives/swift-source-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-byte-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-diagnostic-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-cardinal-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-tagged-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-ownership-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-standard-library-extensions.git", branch: "main"),
+        .package(
+            url: "https://github.com/swift-primitives/swift-source-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-byte-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-diagnostic-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-cardinal-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-tagged-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-ownership-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-standard-library-extensions.git",
+            branch: "main"
+        ),
         .package(url: "https://github.com/swiftlang/swift-syntax.git", "602.0.0"..<"603.0.0"),
     ],
     targets: [
@@ -39,9 +60,18 @@ let package = Package(
                 .product(name: "Diagnostic Primitives", package: "swift-diagnostic-primitives"),
                 .product(name: "Cardinal Primitives", package: "swift-cardinal-primitives"),
                 .product(name: "Tagged Primitives", package: "swift-tagged-primitives"),
-                .product(name: "Tagged Primitives Standard Library Integration", package: "swift-tagged-primitives"),
-                .product(name: "Ownership Immutable Primitives", package: "swift-ownership-primitives"),
-                .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions"),
+                .product(
+                    name: "Tagged Primitives Standard Library Integration",
+                    package: "swift-tagged-primitives"
+                ),
+                .product(
+                    name: "Ownership Immutable Primitives",
+                    package: "swift-ownership-primitives"
+                ),
+                .product(
+                    name: "Standard Library Extensions",
+                    package: "swift-standard-library-extensions"
+                ),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
             ]
         ),
@@ -49,8 +79,14 @@ let package = Package(
             name: "Linter Primitives Test Support",
             dependencies: [
                 "Linter Primitives",
-                .product(name: "Source Primitives Test Support", package: "swift-source-primitives"),
-                .product(name: "Diagnostic Primitives Test Support", package: "swift-diagnostic-primitives"),
+                .product(
+                    name: "Source Primitives Test Support",
+                    package: "swift-source-primitives"
+                ),
+                .product(
+                    name: "Diagnostic Primitives Test Support",
+                    package: "swift-diagnostic-primitives"
+                ),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
             ],
             path: "Tests/Support"
