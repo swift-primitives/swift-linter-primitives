@@ -6,25 +6,21 @@ extension Lint.Rule {
             id: self.id,
             default: self.severity.default,
             suppression: self.suppression,
-            findings: { (source: borrowing Lint.Source.Parsed, severity) in
-                guard filter.matches(sourcePath: source.path) else { return [] }
-                return self.findings(source, severity)
+            observe: { (source: borrowing Lint.Source.Parsed, severity) in
+                guard filter.matches(sourcePath: source.path) else {
+                    return Lint.Rule.Observation(
+                        findings: [],
+                        coverage: .measured,
+                        applicable: false
+                    )
+                }
+                return self.observe(source, severity)
             },
-
-            fix: Self.gated(self.fix, by: filter)
+            repair: { (source: borrowing Lint.Source.Parsed) in
+                guard filter.matches(sourcePath: source.path) else { return .unchanged }
+                return self.repair(source)
+            }
         )
-    }
-
-    @inlinable
-    public static func gated(
-        _ fix: (@Sendable (borrowing Lint.Source.Parsed) -> Swift.String?)?,
-        by filter: Lint.Filter
-    ) -> (@Sendable (borrowing Lint.Source.Parsed) -> Swift.String?)? {
-        guard let fix else { return nil }
-        return { (source: borrowing Lint.Source.Parsed) -> Swift.String? in
-            guard filter.matches(sourcePath: source.path) else { return nil }
-            return fix(source)
-        }
     }
 
     @inlinable
@@ -33,8 +29,8 @@ extension Lint.Rule {
             id: self.id,
             default: severity,
             suppression: self.suppression,
-            findings: self.findings,
-            fix: self.fix
+            observe: self.observe,
+            repair: self.repair
         )
     }
 
@@ -44,10 +40,10 @@ extension Lint.Rule {
             id: self.id,
             default: severity,
             suppression: self.suppression,
-            findings: { (source: borrowing Lint.Source.Parsed, _) in
-                self.findings(source, severity)
+            observe: { (source: borrowing Lint.Source.Parsed, _) in
+                self.observe(source, severity)
             },
-            fix: self.fix
+            repair: self.repair
         )
     }
 
@@ -62,12 +58,26 @@ extension Lint.Rule {
             id: id,
             default: severity,
             suppression: suppression,
-            findings: { (source: borrowing Lint.Source.Parsed, severity) in
+            observe: { (source: borrowing Lint.Source.Parsed, severity) in
                 var out: [Diagnostic.Record] = []
+                var applicable = false
                 for rule in rules {
-                    out.append(contentsOf: rule.findings(source, severity))
+                    let observation = rule.observe(source, severity)
+                    applicable = applicable || observation.applicable
+                    out.append(contentsOf: observation.findings)
+                    if case .unmeasured(let reason) = observation.coverage {
+                        return Lint.Rule.Observation(
+                            findings: out,
+                            coverage: .unmeasured(reason),
+                            applicable: applicable
+                        )
+                    }
                 }
-                return out
+                return Lint.Rule.Observation(
+                    findings: out,
+                    coverage: .measured,
+                    applicable: applicable
+                )
             }
         )
     }

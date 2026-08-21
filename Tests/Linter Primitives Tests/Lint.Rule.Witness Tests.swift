@@ -21,7 +21,7 @@ extension Lint.Rule.Test {
             id: id,
             default: .warning,
             suppression: suppression,
-            findings: { (_: borrowing Lint.Source.Parsed, _) in [] }
+            observe: Lint.Rule.measured { (_: borrowing Lint.Source.Parsed, _) in [] }
         )
     }
 
@@ -61,7 +61,7 @@ extension Lint.Rule.Test.Unit {
             }
             """
         )
-        let findings = Lint.Rule.`sketch try optional`.findings(source, .warning)
+        let findings = Lint.Rule.`sketch try optional`.observe(source, .warning).findings
         #expect(findings.count == 1)
         #expect(findings.first?.identifier == "sketch_try_optional")
         #expect(findings.first?.severity == .warning)
@@ -70,10 +70,49 @@ extension Lint.Rule.Test.Unit {
     @Test
     func `Engine threads resolved severity through the witness closure`() {
         let source = parsedSource("_ = try? f()")
-        let asError = Lint.Rule.`sketch try optional`.findings(source, .error)
+        let asError = Lint.Rule.`sketch try optional`.observe(source, .error).findings
         #expect(asError.first?.severity == .error)
-        let asWarning = Lint.Rule.`sketch try optional`.findings(source, .warning)
+        let asWarning = Lint.Rule.`sketch try optional`.observe(source, .warning).findings
         #expect(asWarning.first?.severity == .warning)
+    }
+
+    @Test
+    func `Observation distinguishes measured silence from unmeasured coverage`() {
+        let source = parsedSource("let value = computed()")
+        let measured = Lint.Rule.`sketch noop`.observe(source, .warning)
+        #expect(measured.findings.isEmpty)
+        #expect(measured.coverage == .measured)
+        #expect(measured.applicable)
+
+        let unmeasured = Lint.Rule(
+            id: "requires semantics",
+            default: .warning,
+            observe: { _, _ in
+                Lint.Rule.Observation(
+                    findings: [],
+                    coverage: .unmeasured(.missingSemanticContext)
+                )
+            }
+        ).observe(source, .warning)
+        #expect(unmeasured.findings.isEmpty)
+        #expect(unmeasured.coverage == .unmeasured(.missingSemanticContext))
+    }
+
+    @Test
+    func `Repair proposal names its path and replacement`() {
+        let source = parsedSource("let value = 1")
+        let rule = Lint.Rule(
+            id: "typed repair",
+            default: .warning,
+            observe: Lint.Rule.measured { _, _ in [] },
+            repair: { source in
+                .edits([.rewrite(path: source.path, contents: "let value = 2")])
+            }
+        )
+        #expect(
+            rule.repair(source)
+                == .edits([.rewrite(path: "Sources/Test/Test.swift", contents: "let value = 2")])
+        )
     }
 
     @Test
@@ -124,7 +163,7 @@ extension Lint.Rule.Test.Unit {
     func `pinned to ignores the threaded severity`() {
         let source = parsedSource("_ = try? f()")
         let pinned = Lint.Rule.`sketch try optional`.pinned(to: .error)
-        let findings = pinned.findings(source, .warning)
+        let findings = pinned.observe(source, .warning).findings
         #expect(findings.first?.severity == .error)
     }
 
@@ -143,8 +182,29 @@ extension Lint.Rule.Test.Unit {
             default: .warning,
             [Lint.Rule.`sketch try optional`, Lint.Rule.`sketch try optional`]
         )
-        let findings = composite.findings(source, .warning)
+        let findings = composite.observe(source, .warning).findings
         #expect(findings.count == 2)
+    }
+
+    @Test
+    func `combining propagates unmeasured coverage`() {
+        let source = parsedSource("let value = computed()")
+        let unmeasured = Lint.Rule(
+            id: "requires semantics",
+            default: .warning,
+            observe: { _, _ in
+                Lint.Rule.Observation(
+                    findings: [],
+                    coverage: .unmeasured(.missingSemanticContext)
+                )
+            }
+        )
+        let composite = Lint.Rule.combining(
+            id: "composite",
+            default: .warning,
+            [Lint.Rule.`sketch noop`, unmeasured]
+        )
+        #expect(composite.observe(source, .warning).coverage == .unmeasured(.missingSemanticContext))
     }
 
     @Test
@@ -152,8 +212,9 @@ extension Lint.Rule.Test.Unit {
         let inside = parsedSource("_ = try? f()", path: "Sources/A/x.swift")
         let outside = parsedSource("_ = try? f()", path: "Sources/B/y.swift")
         let scoped = Lint.Rule.`sketch try optional`.filtered(toPaths: .including(["Sources/A"]))
-        #expect(scoped.findings(inside, .warning).count == 1)
-        #expect(scoped.findings(outside, .warning).count == 0)
+        #expect(scoped.observe(inside, .warning).findings.count == 1)
+        #expect(scoped.observe(outside, .warning).findings.count == 0)
+        #expect(!scoped.observe(outside, .warning).applicable)
     }
 
     @Test
@@ -188,8 +249,8 @@ extension Lint.Rule.Test.Unit {
         let inside = parsedSource("_ = try? f()", path: "Sources/A/x.swift")
         let outside = parsedSource("_ = try? f()", path: "Sources/B/y.swift")
 
-        #expect(entry.rule.findings(inside, .warning).count == 1)
-        #expect(entry.rule.findings(outside, .warning).count == 0)
+        #expect(entry.rule.observe(inside, .warning).findings.count == 1)
+        #expect(entry.rule.observe(outside, .warning).findings.count == 0)
     }
 
     @Test

@@ -5,7 +5,7 @@ extension Lint.Rule {
     public static let `sketch try optional` = Lint.Rule(
         id: "sketch_try_optional",
         default: .warning,
-        findings: { (source: borrowing Lint.Source.Parsed, severity) in
+        observe: Lint.Rule.measured { (source: borrowing Lint.Source.Parsed, severity) in
             final class Visitor: SyntaxVisitor {
                 var hits: [SourceLocation] = []
                 let converter: SourceLocationConverter
@@ -41,6 +41,6 @@ extension Lint.Rule {
     public static let `sketch noop` = Lint.Rule(
         id: "sketch_noop",
         default: .warning,
-        findings: { (_: borrowing Lint.Source.Parsed, _) in [] }
+        observe: Lint.Rule.measured { (_: borrowing Lint.Source.Parsed, _) in [] }
     )
 }
