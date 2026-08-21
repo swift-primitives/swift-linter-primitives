@@ -1,14 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-linter-primitives open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-linter-primitives project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 import Linter_Primitives_Test_Support
 import Testing
 
@@ -20,10 +9,7 @@ extension Lint.Finding {
 }
 
 extension Lint.Finding.Test.Unit {
-    /// Build a small fixture record for tests.
-    ///
-    /// The exact contents don't matter; only the wrapper's pass-through and
-    /// visibility-pairing behavior is under test.
+
     private static func fixtureRecord(
         identifier: Swift.String = "fixture rule",
         line: Swift.Int = 1,

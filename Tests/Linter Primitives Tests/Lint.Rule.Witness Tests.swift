@@ -1,14 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-linter-primitives open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-linter-primitives project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 import Byte_Primitives
 import Linter_Primitives_Test_Support
 import SwiftParser
@@ -42,7 +31,7 @@ extension Lint.Rule.Test {
 }
 
 extension Lint.Rule.Test.Unit {
-    /// Build a parsed source bundle from inline Swift source text.
+
     private func parsedSource(
         _ text: Swift.String,
         path: Lint.Source.Path = "Sources/Test/Test.swift"
@@ -135,8 +124,8 @@ extension Lint.Rule.Test.Unit {
     func `pinned to ignores the threaded severity`() {
         let source = parsedSource("_ = try? f()")
         let pinned = Lint.Rule.`sketch try optional`.pinned(to: .error)
-        let findings = pinned.findings(source, .warning)  // engine threads warning…
-        #expect(findings.first?.severity == .error)  // …but rule pins error
+        let findings = pinned.findings(source, .warning)
+        #expect(findings.first?.severity == .error)
     }
 
     @Test
@@ -198,7 +187,7 @@ extension Lint.Rule.Test.Unit {
         )
         let inside = parsedSource("_ = try? f()", path: "Sources/A/x.swift")
         let outside = parsedSource("_ = try? f()", path: "Sources/B/y.swift")
-        // The stored witness IS the filtered rule — engine just calls it.
+
         #expect(entry.rule.findings(inside, .warning).count == 1)
         #expect(entry.rule.findings(outside, .warning).count == 0)
     }

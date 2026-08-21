@@ -1,33 +1,5 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-linter-primitives open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-linter-primitives project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
-/// Composition operators on ``Lint/Rule``.
-///
-/// Witnesses-as-data unlocks transformations the protocol shape could not
-/// express without an existential wrapper. These operators let the
-/// engine reduce to a trivial fold over `[Lint.Rule]`: per-rule path
-/// filtering, severity overrides, and rule-pack composition fold INTO
-/// the witness rather than threading alongside it.
 extension Lint.Rule {
-    /// Returns a rule that emits findings only for sources whose path
-    /// matches `filter`.
-    ///
-    /// Sources outside the filter produce no findings.
-    ///
-    /// Folds per-rule path filtering into the witness. The engine's
-    /// per-source loop becomes a single fold over `[Lint.Rule]` — there
-    /// is no per-entry `paths:` branch to thread. The configuration-level
-    /// ``Lint/Rule/Configuration/enable(_:severity:paths:)`` factory
-    /// applies this combinator internally when its `paths:` argument is
-    /// non-nil, so call sites read the same as before.
+
     @inlinable
     public func filtered(toPaths filter: Lint.Filter) -> Lint.Rule {
         Lint.Rule(
@@ -38,19 +10,11 @@ extension Lint.Rule {
                 guard filter.matches(sourcePath: source.path) else { return [] }
                 return self.findings(source, severity)
             },
-            // The path filter gates the fix on the same predicate as the
-            // findings: a rule scoped away from a path must not rewrite it.
+
             fix: Self.gated(self.fix, by: filter)
         )
     }
 
-    /// Wraps `fix` so it declines every source `filter` excludes.
-    ///
-    /// A free function rather than `fix.map { … }`: `Optional.map`'s
-    /// transform is not `@Sendable`, so the closure it returns cannot be
-    /// converted to the `@Sendable` fix type without a diagnostic. Spelling
-    /// the wrap out keeps the sendability of the result checked rather than
-    /// asserted.
     @inlinable
     public static func gated(
         _ fix: (@Sendable (borrowing Lint.Source.Parsed) -> Swift.String?)?,
@@ -63,11 +27,6 @@ extension Lint.Rule {
         }
     }
 
-    /// Returns a rule whose default severity is replaced.
-    ///
-    /// The engine's severity-resolution step
-    /// (`config.severity ?? rule.severity.default`) then picks up the new
-    /// default automatically.
     @inlinable
     public func with(default severity: Diagnostic.Severity) -> Lint.Rule {
         Lint.Rule(
@@ -79,11 +38,6 @@ extension Lint.Rule {
         )
     }
 
-    /// Returns a rule that emits at a fixed severity, ignoring the
-    /// severity argument threaded by the engine.
-    ///
-    /// Use when a downstream configuration has already resolved severity
-    /// and the rule should honor that resolution exactly.
     @inlinable
     public func pinned(to severity: Diagnostic.Severity) -> Lint.Rule {
         Lint.Rule(
@@ -97,19 +51,6 @@ extension Lint.Rule {
         )
     }
 
-    /// Returns a composite rule that runs every child rule against the
-    /// same parsed source and concatenates findings in input order.
-    ///
-    /// The composite carries no autofix even when its children do: chaining
-    /// whole-file rewrites requires re-parsing between children, which is the
-    /// engine's job, not a closure's. Activate the children individually to
-    /// get their fixes.
-    ///
-    /// The composite carries `id`, a default severity, and an explicit
-    /// suppression policy itself; children supply their own findings at the
-    /// severity threaded through the composite. Child policies are never
-    /// combined or inferred, so the composite defaults to sanctioning no
-    /// directive shape. Useful for packaging a rule set as a single witness.
     @inlinable
     public static func combining(
         id: Lint.Rule.ID,

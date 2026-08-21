@@ -1,14 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-linter-primitives open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-linter-primitives project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 import Linter_Primitives_Test_Support
 import SwiftParser
 import SwiftSyntax
@@ -22,8 +11,6 @@ extension Lint.Syntax {
         @Suite struct Scope {}
     }
 }
-
-// MARK: - Lint.Syntax.Identifier.unescaped(_:)
 
 extension Lint.Syntax.Test.Identifier {
     @Test
@@ -51,8 +38,6 @@ extension Lint.Syntax.Test.Identifier {
         #expect(Lint.Syntax.Identifier.unescaped("`") == "`")
     }
 }
-
-// MARK: - Lint.Syntax.IfConfig
 
 extension Lint.Syntax.Test.`If Config` {
     @Test
@@ -110,8 +95,6 @@ extension Lint.Syntax.Test.`If Config` {
         #expect(members.count == 2)
     }
 }
-
-// MARK: - Lint.Syntax.Scope.isTopLevel(_:)
 
 extension Lint.Syntax.Test.Scope {
     @Test
@@ -195,8 +178,6 @@ extension Lint.Syntax.Test.Scope {
         #expect(!Lint.Syntax.Scope.isTopLevel(structDecl))
     }
 }
-
-// MARK: - Test helpers
 
 private func findFirstNode<T: SyntaxProtocol>(
     in node: Syntax,

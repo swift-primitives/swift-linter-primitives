@@ -1,27 +1,7 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-linter-primitives open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-linter-primitives project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 internal import SwiftSyntax
 
-/// Sketch rules used to exercise the witness-shape end-to-end.
-///
-/// These exist in test-support, not in `Linter_Primitives`, because the
-/// L1 package owns the rule namespace but ships zero rules — concrete
-/// rules live in dedicated rule packs. The sketches here only prove the
-/// witness API compiles and runs.
 extension Lint.Rule {
-    /// A trivial rule that emits one finding for every `try?` expression
-    /// in the parsed tree. Mirrors what the real `try_optional` rule does
-    /// in the canonical rule pack — but inlined as a witness value to
-    /// demonstrate the shape.
+
     public static let `sketch try optional` = Lint.Rule(
         id: "sketch_try_optional",
         default: .warning,
@@ -58,8 +38,6 @@ extension Lint.Rule {
         }
     )
 
-    /// A rule that always emits nothing — useful as a no-op control in
-    /// composition tests.
     public static let `sketch noop` = Lint.Rule(
         id: "sketch_noop",
         default: .warning,

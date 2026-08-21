@@ -1,14 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-linter-primitives open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-linter-primitives project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 import Linter_Primitives_Test_Support
 import Testing
 
@@ -31,7 +20,7 @@ extension Lint.Configuration.Test.Unit {
     @Test
     func `Configuration captures rules from result-builder block`() {
         let config = Lint.Configuration {
-            // Empty block — produces empty rules.
+
         }
         #expect(config.rules.entries.isEmpty)
     }
