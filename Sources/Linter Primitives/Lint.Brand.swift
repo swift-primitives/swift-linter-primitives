@@ -7,7 +7,7 @@ extension Lint {
 
 extension Lint.Brand {
 
-    public static let numericBoundaryVocabulary: Swift.Set<Swift.String> = [
+    public static let vocabulary: Swift.Set<Swift.String> = [
         "Cardinal",
         "Ordinal",
         "Cyclic",
@@ -15,7 +15,7 @@ extension Lint.Brand {
         "Carrier",
     ]
 
-    public static func topLevelTypeNames(in tree: SourceFileSyntax) -> Swift.Set<Swift.String> {
+    public static func types(in tree: SourceFileSyntax) -> Swift.Set<Swift.String> {
         var names: Swift.Set<Swift.String> = []
         for statement in tree.statements {
             let item = statement.item
@@ -38,6 +38,6 @@ extension Lint.Brand {
         _ brands: Swift.Set<Swift.String>,
         in source: borrowing Lint.Source.Parsed
     ) -> Swift.Bool {
-        !brands.isDisjoint(with: source.declaredTypeNames)
+        !brands.isDisjoint(with: source.types)
     }
 }

@@ -5,6 +5,8 @@ extension Lint.Configuration {
     @Suite
     struct Test {
         @Suite struct Unit {}
+        @Suite struct `Edge Case` {}
+        @Suite struct Integration {}
     }
 }
 
@@ -51,6 +53,8 @@ extension Lint.Filter {
     @Suite
     struct Test {
         @Suite struct Unit {}
+        @Suite struct `Edge Case` {}
+        @Suite struct Integration {}
     }
 }
 

@@ -9,6 +9,7 @@ extension Lint.Rule {
     struct Test {
         @Suite struct Unit {}
         @Suite struct `Edge Case` {}
+        @Suite struct Integration {}
     }
 }
 

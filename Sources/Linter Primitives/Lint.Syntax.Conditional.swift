@@ -1,11 +1,10 @@
 public import SwiftSyntax
 
 extension Lint.Syntax {
-
-    public enum IfConfig {}
+    public enum Conditional {}
 }
 
-extension Lint.Syntax.IfConfig {
+extension Lint.Syntax.Conditional {
 
     @inlinable
     public static func statements(

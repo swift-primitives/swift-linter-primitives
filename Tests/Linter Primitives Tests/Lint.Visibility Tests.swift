@@ -7,6 +7,8 @@ extension Lint.Visibility {
     @Suite
     struct Test {
         @Suite struct Unit {}
+        @Suite struct `Edge Case` {}
+        @Suite struct Integration {}
         @Suite struct Effective {}
     }
 }

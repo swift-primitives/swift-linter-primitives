@@ -12,7 +12,7 @@ extension Lint.Source {
 
         public let converter: SourceLocationConverter
 
-        public let declaredTypeNames: Swift.Set<Swift.String>
+        public let types: Swift.Set<Swift.String>
 
         @inlinable
         public init(
@@ -20,13 +20,13 @@ extension Lint.Source {
             path: Lint.Source.Path,
             tree: SourceFileSyntax,
             converter: SourceLocationConverter,
-            declaredTypeNames: Swift.Set<Swift.String> = []
+            types: Swift.Set<Swift.String> = []
         ) {
             self.file = file
             self.path = path
             self.tree = tree
             self.converter = converter
-            self.declaredTypeNames = declaredTypeNames
+            self.types = types
         }
     }
 }

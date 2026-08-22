@@ -6,6 +6,9 @@ import Testing
 extension Lint.Syntax {
     @Suite
     struct Test {
+        @Suite struct Unit {}
+        @Suite struct `Edge Case` {}
+        @Suite struct Integration {}
         @Suite struct Identifier {}
         @Suite struct `If Config` {}
         @Suite struct Scope {}
@@ -51,7 +54,7 @@ extension Lint.Syntax.Test.`If Config` {
             let b = 2
             """
         let tree = Parser.parse(source: source)
-        let flattened = Lint.Syntax.IfConfig.statements(tree.statements)
+        let flattened = Lint.Syntax.Conditional.statements(tree.statements)
         #expect(flattened.count == 2)
     }
 
@@ -72,7 +75,7 @@ extension Lint.Syntax.Test.`If Config` {
             Issue.record("expected a StructDeclSyntax")
             return
         }
-        let members = Lint.Syntax.IfConfig.members(structDecl.memberBlock)
+        let members = Lint.Syntax.Conditional.members(structDecl.memberBlock)
         #expect(members.count == 2)
     }
 
@@ -91,7 +94,7 @@ extension Lint.Syntax.Test.`If Config` {
             Issue.record("expected a StructDeclSyntax")
             return
         }
-        let members = Lint.Syntax.IfConfig.members(structDecl.memberBlock)
+        let members = Lint.Syntax.Conditional.members(structDecl.memberBlock)
         #expect(members.count == 2)
     }
 }

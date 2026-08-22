@@ -11,7 +11,7 @@ extension Lint.Rule {
                     return Lint.Rule.Observation(
                         findings: [],
                         coverage: .measured,
-                        applicable: false
+                        applicability: .inapplicable
                     )
                 }
                 return self.observe(source, severity)
@@ -63,20 +63,20 @@ extension Lint.Rule {
                 var applicable = false
                 for rule in rules {
                     let observation = rule.observe(source, severity)
-                    applicable = applicable || observation.applicable
+                    applicable = applicable || observation.applicability.isApplicable
                     out.append(contentsOf: observation.findings)
                     if case .unmeasured(let reason) = observation.coverage {
                         return Lint.Rule.Observation(
                             findings: out,
                             coverage: .unmeasured(reason),
-                            applicable: applicable
+                            applicability: applicable ? .applicable : .inapplicable
                         )
                     }
                 }
                 return Lint.Rule.Observation(
                     findings: out,
                     coverage: .measured,
-                    applicable: applicable
+                    applicability: applicable ? .applicable : .inapplicable
                 )
             }
         )

@@ -78,7 +78,7 @@ let package = Package(
         .target(
             name: "Linter Primitives Test Support",
             dependencies: [
-                "Linter Primitives",
+                .target(name: "Linter Primitives"),
                 .product(
                     name: "Source Primitives Test Support",
                     package: "swift-source-primitives"
@@ -94,8 +94,8 @@ let package = Package(
         .testTarget(
             name: "Linter Primitives Tests",
             dependencies: [
-                "Linter Primitives",
-                "Linter Primitives Test Support",
+                .target(name: "Linter Primitives"),
+                .target(name: "Linter Primitives Test Support"),
                 .product(name: "Byte Primitives", package: "swift-byte-primitives"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),

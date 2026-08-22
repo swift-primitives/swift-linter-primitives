@@ -8,11 +8,9 @@ extension Lint {
 
         public let suppression: Suppression
 
-        public let observe:
-            @Sendable (borrowing Lint.Source.Parsed, Diagnostic.Severity) -> Observation
+        public let observe: @Sendable (borrowing Lint.Source.Parsed, Diagnostic.Severity) -> Observation
 
-        public let repair:
-            @Sendable (borrowing Lint.Source.Parsed) -> Repair.Proposal
+        public let repair: @Sendable (borrowing Lint.Source.Parsed) -> Repair.Proposal
 
         @inlinable
         public init(
@@ -33,16 +31,18 @@ extension Lint {
             self.observe = observe
             self.repair = repair
         }
+    }
+}
 
-        @inlinable
-        public static func measured(
-            _ findings:
-                @escaping @Sendable (borrowing Lint.Source.Parsed, Diagnostic.Severity) ->
-                [Diagnostic.Record]
-        ) -> @Sendable (borrowing Lint.Source.Parsed, Diagnostic.Severity) -> Observation {
-            { source, severity in
-                Observation(findings: findings(source, severity), coverage: .measured)
-            }
+extension Lint.Rule {
+    @inlinable
+    public static func measured(
+        _ findings:
+            @escaping @Sendable (borrowing Lint.Source.Parsed, Diagnostic.Severity) ->
+            [Diagnostic.Record]
+    ) -> @Sendable (borrowing Lint.Source.Parsed, Diagnostic.Severity) -> Observation {
+        { source, severity in
+            Observation(findings: findings(source, severity), coverage: .measured)
         }
     }
 }

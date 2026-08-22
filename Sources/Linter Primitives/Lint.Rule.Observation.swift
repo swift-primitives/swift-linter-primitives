@@ -6,17 +6,17 @@ extension Lint.Rule {
 
         public let coverage: Coverage
 
-        public let applicable: Swift.Bool
+        public let applicability: Applicability
 
         @inlinable
         public init(
             findings: [Diagnostic.Record],
             coverage: Coverage,
-            applicable: Swift.Bool = true
+            applicability: Applicability = .applicable
         ) {
             self.findings = findings
             self.coverage = coverage
-            self.applicable = applicable
+            self.applicability = applicability
         }
     }
 }
