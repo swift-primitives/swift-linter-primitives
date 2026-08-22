@@ -24,4 +24,14 @@ extension Lint.Visibility {
         case .private: return 0
         }
     }
+
+    @inlinable
+    public var token: Swift.String {
+        switch self {
+        case .public: "public"
+        case .internal: "internal"
+        case .fileprivate: "fileprivate"
+        case .private: "private"
+        }
+    }
 }
